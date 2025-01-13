@@ -186,10 +186,6 @@ int main()
             }
             u = menor1.second;
         }
-        else
-        {
-            
-        }
         sequencia_resultante[count] = u;
     }
 
