@@ -1,10 +1,13 @@
 {
     "files.associations": {
+        "*.ts": "typescript",
         "ostream": "cpp",
         "*.tcc": "cpp",
         "iosfwd": "cpp",
         "string": "cpp",
         "cmath": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "random": "cpp",
+        "limits": "cpp"
     }
 }

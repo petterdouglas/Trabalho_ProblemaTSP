@@ -7,6 +7,7 @@
 #include <stack>
 #include <functional>
 #include <cmath>
+#include <algorithm>
 using namespace std;
 
 typedef pair<int, int> ii;
@@ -204,156 +205,176 @@ int main()
 
         // INICIO DA LÓGICA DO ALGORITMO
 
-        // Escolha do ponto inicial será estrategicamente escolhida pelo vértice que compõe as duas arestas com menores pesos do grafo
-        int inicial = 0;
-        vd sequencia_resultante;
-        sequencia_resultante.push_back(inicial);
-        lista_de_adjacencia[inicial][inicial].second.second = false;
-        lista_de_adjacencia[inicial][inicial].second.second = false;
+        // Escolha do ponto inicio será estrategicamente escolhida pelo vértice que compõe as duas arestas com menores pesos do grafo
 
-        int marcador1 = -1;
-        int marcador2 = -1;
+        double melhorMaiorDistancia = numeric_limits<double>::max();
+        vd melhor_sequencia;
 
-        // descobrir dois marcadores de saída
-        Menor1Menor2(marcador1, marcador2, lista_de_adjacencia, inicial);
-
-        // pilha para caminho de marcador2
-        stack<int> caminho2;
-        caminho2.push(marcador2);
-        // fila para caminho de marcador1
-        queue<int> caminho1;
-        caminho1.push(marcador1);
-
-        // controle de percurso
-        bool fechouCiclo = false;
-
-        // Lógica de escolha do caminho
-        while (!fechouCiclo)
+        for (int inicio = 0; inicio < tamanho; inicio++)
         {
-            lista_de_adjacencia[marcador1][marcador2].second.second = false;
-            lista_de_adjacencia[marcador2][marcador1].second.second = false;
+            vd sequencia_resultante;
+            sequencia_resultante.push_back(inicio);
+            lista_de_adjacencia[inicio][inicio].second.second = false;
+            lista_de_adjacencia[inicio][inicio].second.second = false;
 
-            int menor1Marc1 = -1;
-            int menor2Marc1 = -1;
-            Menor1Menor2(menor1Marc1, menor2Marc1, lista_de_adjacencia, marcador1);
+            int marcador1 = -1;
+            int marcador2 = -1;
 
-            int menor1Marc2 = -1;
-            int menor2Marc2 = -1;
-            Menor1Menor2(menor1Marc2, menor2Marc2, lista_de_adjacencia, marcador2);
+            // descobrir dois marcadores de saída
+            Menor1Menor2(marcador1, marcador2, lista_de_adjacencia, inicio);
 
-            if (menor1Marc1 == -1 or menor2Marc1 == -1 or menor1Marc2 == -1 or menor2Marc2 == -1)
+            // pilha para caminho de marcador2
+            stack<int> caminho2;
+            caminho2.push(marcador2);
+            // fila para caminho de marcador1
+            queue<int> caminho1;
+            caminho1.push(marcador1);
+
+            // controle de percurso
+            bool fechouCiclo = false;
+
+            // Lógica de escolha do caminho
+            while (!fechouCiclo)
             {
-                if (menor1Marc1 > -1)
-                {
-                    caminho1.push(menor1Marc1);
-                }
-                if (menor2Marc1 > -1)
-                {
-                    caminho1.push(menor2Marc1);
-                }
-                if (menor1Marc2 > -1)
-                {
-                    caminho2.push(menor1Marc2);
-                }
-                if (menor2Marc2 > -1)
-                {
-                    caminho2.push(menor2Marc2);
-                }
+                lista_de_adjacencia[marcador1][marcador2].second.second = false;
+                lista_de_adjacencia[marcador2][marcador1].second.second = false;
 
-                fechouCiclo = true;
-            }
-            else
-            {
-                if (menor1Marc1 == menor1Marc2)
+                int menor1Marc1 = -1;
+                int menor2Marc1 = -1;
+                Menor1Menor2(menor1Marc1, menor2Marc1, lista_de_adjacencia, marcador1);
+
+                int menor1Marc2 = -1;
+                int menor2Marc2 = -1;
+                Menor1Menor2(menor1Marc2, menor2Marc2, lista_de_adjacencia, marcador2);
+
+                if (menor1Marc1 == -1 or menor2Marc1 == -1 or menor1Marc2 == -1 or menor2Marc2 == -1)
                 {
-                    double pesoMenor1Marc1 = lista_de_adjacencia[marcador1][menor1Marc1].second.first;
-                    double pesoMenor2Marc1 = lista_de_adjacencia[marcador1][menor2Marc1].second.first;
-                    double pesoMenor1Marc2 = lista_de_adjacencia[marcador2][menor1Marc2].second.first;
-                    double pesoMenor2Marc2 = lista_de_adjacencia[marcador2][menor2Marc2].second.first;
-                    double gastoEscolha1 = pesoMenor1Marc1 + pesoMenor2Marc2; // menor1Marc1 é escolhido
-                    double gastoEscolha2 = pesoMenor2Marc1 + pesoMenor1Marc2; // menor1Marc2 é escolhido
-                    if (gastoEscolha1 < gastoEscolha2)
+                    if (menor1Marc1 > -1)
                     {
-                        marcador1 = menor1Marc1;
-                        marcador2 = menor2Marc2;
+                        caminho1.push(menor1Marc1);
                     }
-                    else if (gastoEscolha1 > gastoEscolha2)
+                    else if (menor2Marc1 > -1)
                     {
-                        marcador1 = menor2Marc1;
-                        marcador2 = menor1Marc2;
+                        caminho1.push(menor2Marc1);
                     }
-                    else
+                    else if (menor1Marc2 > -1)
                     {
-                        if (pesoMenor1Marc1 <= pesoMenor1Marc2)
+                        caminho2.push(menor1Marc2);
+                    }
+                    else if (menor2Marc2 > -1)
+                    {
+                        caminho2.push(menor2Marc2);
+                    }
+
+                    fechouCiclo = true;
+                }
+                else
+                {
+                    if (menor1Marc1 == menor1Marc2)
+                    {
+                        double pesoMenor1Marc1 = lista_de_adjacencia[marcador1][menor1Marc1].second.first;
+                        double pesoMenor2Marc1 = lista_de_adjacencia[marcador1][menor2Marc1].second.first;
+                        double pesoMenor1Marc2 = lista_de_adjacencia[marcador2][menor1Marc2].second.first;
+                        double pesoMenor2Marc2 = lista_de_adjacencia[marcador2][menor2Marc2].second.first;
+                        double gastoEscolha1 = pesoMenor1Marc1 + pesoMenor2Marc2; // menor1Marc1 é escolhido
+                        double gastoEscolha2 = pesoMenor2Marc1 + pesoMenor1Marc2; // menor1Marc2 é escolhido
+                        if (gastoEscolha1 < gastoEscolha2)
                         {
                             marcador1 = menor1Marc1;
                             marcador2 = menor2Marc2;
                         }
-                        else
+                        else if (gastoEscolha1 > gastoEscolha2)
                         {
                             marcador1 = menor2Marc1;
                             marcador2 = menor1Marc2;
                         }
+                        else
+                        {
+                            if (pesoMenor1Marc1 <= pesoMenor1Marc2)
+                            {
+                                marcador1 = menor1Marc1;
+                                marcador2 = menor2Marc2;
+                            }
+                            else
+                            {
+                                marcador1 = menor2Marc1;
+                                marcador2 = menor1Marc2;
+                            }
+                        }
+                        caminho1.push(marcador1);
+                        caminho2.push(marcador2);
                     }
-                    caminho1.push(marcador1);
-                    caminho2.push(marcador2);
+                    else
+                    {
+                        marcador1 = menor1Marc1;
+                        marcador2 = menor1Marc2;
+                        caminho1.push(marcador1);
+                        caminho2.push(marcador2);
+                    }
                 }
-                else
+            }
+
+            // construir sequencia baseado nos caminhos de marcador1 e marcador2
+            while (!caminho1.empty())
+            {
+                int vertice = caminho1.front();
+                // cout << vertice << " ";
+                sequencia_resultante.push_back(vertice);
+                caminho1.pop();
+                if (vertice == -1)
                 {
-                    marcador1 = menor1Marc1;
-                    marcador2 = menor1Marc2;
-                    caminho1.push(marcador1);
-                    caminho2.push(marcador2);
+                    break;
                 }
             }
-        }
 
-        cout << "DEU CERTO" << endl;
-
-        // construir sequencia baseado nos caminhos de marcador1 e marcador2
-        while (!caminho1.empty())
-        {
-            int vertice = caminho1.front();
-            // cout << vertice << " ";
-            sequencia_resultante.push_back(vertice);
-            caminho1.pop();
-            if (vertice == -1)
+            while (!caminho2.empty())
             {
-                break;
+                int vertice = caminho2.top();
+                sequencia_resultante.push_back(vertice);
+                caminho2.pop();
             }
-        }
+            // para fechar o ciclo do caminho basta colocar a origem como fechamento do percurso
+            sequencia_resultante.push_back(inicio);
 
-        while (!caminho2.empty())
-        {
-            int vertice = caminho2.top();
-            sequencia_resultante.push_back(vertice);
-            caminho2.pop();
-        }
-        // para fechar o ciclo do caminho basta colocar a origem como fechamento do percurso
-        sequencia_resultante.push_back(inicial);
+            double maiorDistanciaAtual = 0;
+            int vertice1, vertice2;
+            int tamSequencia = (int)sequencia_resultante.size();
 
-        double somatoria_resultado = 0;
-        int maior_peso = 0;
-        int vertice1, vertice2;
-
-        for (int i = 1; i < (int)sequencia_resultante.size(); i++)
-        {
-            vertice1 = sequencia_resultante[i - 1];
-            vertice2 = sequencia_resultante[i];
-            double pesoAtual = lista_de_adjacencia[vertice1][vertice2].second.first;
-            if (pesoAtual > maior_peso)
+            for (int i = 1; i < tamSequencia; i++)
             {
-                maior_peso = pesoAtual;
+                vertice1 = sequencia_resultante[i - 1];
+                vertice2 = sequencia_resultante[i];
+                double pesoAtual = lista_de_adjacencia[vertice1][vertice2].second.first;
+                if (pesoAtual > maiorDistanciaAtual)
+                {
+                    maiorDistanciaAtual = pesoAtual;
+                }
             }
-            somatoria_resultado = somatoria_resultado + pesoAtual;
+
+            if (maiorDistanciaAtual < melhorMaiorDistancia and tamSequencia - 1 == tamanho)
+            {
+                melhorMaiorDistancia = maiorDistanciaAtual;
+                melhor_sequencia = sequencia_resultante;
+            }
+
+            for (int x = 0; x < tamanho; x++)
+            {
+                for (auto &aresta : lista_de_adjacencia[x])
+                {
+                    if (aresta.first == x)
+                    {
+                        continue;
+                    }
+                    aresta.second.second = true;
+                }
+            }
+            cout << "Buscando" << endl;
         }
 
         // criar calculo de maior peso e somatória do resultado
 
         cout << endl;
-        cout << "Maior distancia: " << maior_peso << endl;
-        cout << "Resultado: " << somatoria_resultado << endl
-             << endl;
+        cout << "Maior distancia: " << melhorMaiorDistancia << endl;
         arquivo.close();
 
         char resposta;
