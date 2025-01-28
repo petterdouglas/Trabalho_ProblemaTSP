@@ -25,30 +25,34 @@ void exportarParaMinheap(priority_queue<di, vector<di>, std::greater<di>> &minHe
     minHeap.push(make_pair(valor1, valor2));
 }
 
-double GrausParaRadiano(double valor)
-{
-    return valor * M_PI / 180.0;
+double GrausParaRadianoGeografico(double valor) {
+    // Converte o formato DDD.MM para radianos conforme especificado
+    int graus = static_cast<int>(valor);  // Parte inteira (graus)
+    double minutos = valor - graus;      // Parte decimal (minutos)
+    return M_PI * (graus + 5.0 * minutos / 3.0) / 180.0;
 }
 
-double haversine(double &valor1X, double &valor1Y, double &valor2X, double &valor2Y)
-{
-    const double Raio = 6371.0; // Raio da Terra em km
+double distanciaGeografica(double valor1X, double valor1Y, double valor2X, double valor2Y) {
+    const double RRR = 6378.388; // Raio idealizado da Terra em km
 
-    valor1X = GrausParaRadiano(valor1X);
-    valor1Y = GrausParaRadiano(valor1Y);
-    valor2X = GrausParaRadiano(valor2X);
-    valor2Y = GrausParaRadiano(valor2Y);
+    // Converte os valores para latitude e longitude em radianos
+    double latitude1 = GrausParaRadianoGeografico(valor1X);
+    double longitude1 = GrausParaRadianoGeografico(valor1Y);
+    double latitude2 = GrausParaRadianoGeografico(valor2X);
+    double longitude2 = GrausParaRadianoGeografico(valor2Y);
 
-    double dlatitude = valor2X - valor1X;
-    double dlongitude = valor2Y - valor1Y;
+    // Calcula os componentes necessários
+    double q1 = cos(longitude1 - longitude2);
+    double q2 = cos(latitude1 - latitude2);
+    double q3 = cos(latitude1 + latitude2);
 
-    double a = sin(dlatitude / 2) * sin(dlatitude / 2) +
-               cos(valor1X) * cos(valor2X) * sin(dlongitude / 2) * sin(dlongitude / 2);
+    // Calcula a distância geográfica conforme a fórmula
+    double dij = RRR * acos(0.5 * ((1.0 + q1) * q2 - (1.0 - q1) * q3)) + 1.0;
 
-    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-
-    return Raio * c;
+    // Retorna a distância arredondada para o inteiro mais próximo
+    return static_cast<int>(dij);
 }
+
 
 int calcularDistanciaEUC_2D(double valor1X, double valor1Y, double valor2X, double valor2Y)
 {
@@ -151,7 +155,7 @@ int main()
                 {
                     if (tipoCalc == "GEO") // avalia o tipo do cálculo do peso da distância entre os vertices(arestas)
                     {
-                        peso = haversine(valor1X, valor1Y, valor2X, valor2Y);
+                        peso = distanciaGeografica(valor1X, valor1Y, valor2X, valor2Y);
                         lista_de_adjacencia[i].emplace_back(make_pair(j, make_pair(peso, true)));
                     }
                     if (tipoCalc == "EUC_2D")
@@ -288,7 +292,6 @@ int main()
             u = vertice_escolhido.second;
         }
 
-        double somatoria_resultado = 0;
 
         int maior_peso = 0;
 
@@ -298,13 +301,10 @@ int main()
             {
                 maior_peso = item.first;
             }
-            somatoria_resultado += item.first;
         }
 
         cout << endl;
         cout << "Maior distancia: " << maior_peso << endl;
-        cout << "Resultado: " << somatoria_resultado << endl
-             << endl;
         arquivo.close();
 
         char resposta;
