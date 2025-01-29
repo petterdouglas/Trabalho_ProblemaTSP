@@ -52,12 +52,18 @@ Utiliza da estratégia do vizinho mais próximo para a escolha dos marcadores se
 
 ## Especificação de funções e métodos utilizados
 
-- > GrausParaRadianoGeografico:
+> GrausParaRadianoGeografico:
 
 Função auxiliar para a função distanciaGeografica responsável por ler os valores vindos direto do arquivo .ins, que está no padrão de graus e minutos, e convertê-los para radianos. Logo após, os valores convertidos são retornados para a função distanciaGeografica.
-- > distanciaGeografica:
+
+> distanciaGeografica:
+
 Função responsável por realizar o cálculo da distância esférica entre dois pontos com base em suas coordenadas geográficas.
-- > calcularDistanciaEUC_2D:
+
+> calcularDistanciaEUC_2D:
+
 Função responsável por calcular a distância euclidiana entre dois pontos em um plano cartesiano.
-- > Menor1Menor2:
+
+> Menor1Menor2:
+
 Função que identifica as duas menores arestas conectadas a um vértice, atualizando os estados das arestas. Retornando os dois menores valores em sequência.
