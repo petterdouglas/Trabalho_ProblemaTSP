@@ -204,8 +204,6 @@ int main()
     {
         vd sequencia_resultante;
         sequencia_resultante.push_back(inicio);
-        lista_de_adjacencia[inicio][inicio].second.second = false;
-        lista_de_adjacencia[inicio][inicio].second.second = false;
 
         int marcador1 = -1;
         int marcador2 = -1;
@@ -308,13 +306,8 @@ int main()
         while (!caminho1.empty())
         {
             int vertice = caminho1.front();
-            // cout << vertice << " ";
             sequencia_resultante.push_back(vertice);
             caminho1.pop();
-            if (vertice == -1)
-            {
-                break;
-            }
         }
 
         while (!caminho2.empty())
@@ -362,8 +355,10 @@ int main()
 
     auto duration = duration_cast<milliseconds>(end - start);
 
-    cout << endl << "Tempo de execucao: " << duration.count() << " ms" << endl;
-    cout << endl << "Maior distancia: " << melhorMaiorDistancia << endl;
+    cout << endl
+         << "Tempo de execucao: " << duration.count() << " ms" << endl;
+    cout << endl
+         << "Maior distancia: " << melhorMaiorDistancia << endl;
 
     ofstream resultado("saida.txt");
 
