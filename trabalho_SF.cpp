@@ -5,9 +5,11 @@
 #include <utility>
 #include <queue>
 #include <stack>
-#include <functional>
 #include <cmath>
+#include <chrono>
+
 using namespace std;
+using namespace chrono;
 
 typedef pair<int, int> ii;
 typedef pair<double, int> di;
@@ -19,14 +21,16 @@ typedef vector<pair<int, pair<double, bool>>> vidb;
 typedef vector<vidb> vv;
 typedef vector<pair<int, dd>> vidd;
 
-double GrausParaRadianoGeografico(double valor) {
+double GrausParaRadianoGeografico(double valor)
+{
     // Converte o formato DDD.MM para radianos conforme especificado
-    int graus = static_cast<int>(valor);  // Parte inteira (graus)
+    int graus = static_cast<int>(valor); // Parte inteira (graus)
     double minutos = valor - graus;      // Parte decimal (minutos)
     return M_PI * (graus + 5.0 * minutos / 3.0) / 180.0;
 }
 
-double distanciaGeografica(double valor1X, double valor1Y, double valor2X, double valor2Y) {
+double distanciaGeografica(double valor1X, double valor1Y, double valor2X, double valor2Y)
+{
     const double RRR = 6378.388; // Raio idealizado da Terra em km
 
     // Converte os valores para latitude e longitude em radianos
@@ -102,123 +106,112 @@ void Menor1Menor2(int &marcador1, int &marcador2, vv &lista_de_adjacencia, int u
 
 int main()
 {
-    vector<string> arquivos = {"01.ins", "02.ins", "03.ins", "04.ins", "05.ins", "06.ins", "07.ins", "08.ins", "09.ins", "10.ins", "testes.ins"};
-    int num = -1;
+    auto start = high_resolution_clock::now();
 
-    while (num != 12)
+    string arq;
+
+    cin >> arq;
+
+    ifstream arquivo(arq);
+
+    if (!arquivo.is_open())
     {
-        cout << "Qual arquivo deseja reproduzir? [digite o numero correspondente]" << endl;
-        cout << "1: 01.ins" << endl;
-        cout << "2: 02.ins" << endl;
-        cout << "3: 03.ins" << endl;
-        cout << "4: 04.ins" << endl;
-        cout << "5: 05.ins" << endl;
-        cout << "6: 06.ins" << endl;
-        cout << "7: 07.ins" << endl;
-        cout << "8: 08.ins" << endl;
-        cout << "9: 09.ins" << endl;
-        cout << "10: 10.ins" << endl;
-        cout << "11: testes.ins" << endl;
-        cout << "12: sair";
-        cout << endl
-             << endl;
-        cin >> num;
+        cerr << "Erro ao abrir o arquivo!" << endl;
+        return 1;
+    }
 
-        ifstream arquivo(arquivos[num - 1]);
+    int tamanho;
+    string linha;
+    string tipoCalc;
+    string lixo;
 
-        if (!arquivo.is_open())
+    while (getline(arquivo, linha))
+    {
+        if (linha.find("DIMENSION") != string::npos)
         {
-            cerr << "Erro ao abrir o arquivo!" << endl;
-            return 1;
+            istringstream tamlinha(linha);
+            tamlinha >> lixo >> lixo >> tamanho;
         }
-
-        int tamanho;
-        string linha;
-        string tipoCalc;
-        string lixo;
-
-        while (getline(arquivo, linha))
+        if (linha.find("EDGE_WEIGHT_TYPE") != string::npos)
         {
-            if (linha.find("DIMENSION") != string::npos)
-            {
-                istringstream tamlinha(linha);
-                tamlinha >> lixo >> lixo >> tamanho;
-            }
-            if (linha.find("EDGE_WEIGHT_TYPE") != string::npos)
-            {
-                istringstream tipoCalcAresta(linha);
-                tipoCalcAresta >> lixo >> lixo >> tipoCalc;
-            }
-            if (linha.find("NODE_COORD_SECTION") != string::npos)
-                break;
+            istringstream tipoCalcAresta(linha);
+            tipoCalcAresta >> lixo >> lixo >> tipoCalc;
         }
-        cout << "Qtd. vertices: " << tamanho << endl;
-        cout << "Tipo de calculo para distancia das arestas: " << tipoCalc << endl;
+        if (linha.find("NODE_COORD_SECTION") != string::npos)
+            break;
+    }
+    cout << "Qtd. vertices: " << tamanho << endl;
+    cout << "Tipo de calculo para distancia das arestas: " << tipoCalc << endl;
 
-        vidd lista_de_vertices;
-        int id;
-        double coord_x, coord_y;
+    vidd lista_de_vertices;
+    int id;
+    double coord_x, coord_y;
 
-        while (getline(arquivo, linha))
+    while (getline(arquivo, linha))
+    {
+
+        if (linha.find("EOF") != string::npos)
         {
+            break;
+        }
+        else
+        {
+            istringstream coordenadas(linha);
+            coordenadas >> id >> coord_x >> coord_y;
+            lista_de_vertices.emplace_back(make_pair(id, make_pair(coord_x, coord_y))); // armazena os vertices com seu ID e suas coordenadas x e y
+        }
+    }
 
-            if (linha.find("EOF") != string::npos)
+    vv lista_de_adjacencia(tamanho); // vetor para armazenamento das arestas dos vertices "i" e "j" e seu respectivo peso
+    for (int i = 0; i < tamanho; i++)
+    {
+        double valor1X = lista_de_vertices[i].second.first;
+        double valor1Y = lista_de_vertices[i].second.second;
+        double valor2X, valor2Y, peso;
+        for (int j = 0; j < tamanho; j++)
+        {
+            valor2X = lista_de_vertices[j].second.first;
+            valor2Y = lista_de_vertices[j].second.second;
+            if (i == j)
             {
-                break;
+                peso = 0;
+                lista_de_adjacencia[i].emplace_back(make_pair(j, make_pair(peso, false)));
             }
             else
             {
-                istringstream coordenadas(linha);
-                coordenadas >> id >> coord_x >> coord_y;
-                lista_de_vertices.emplace_back(make_pair(id, make_pair(coord_x, coord_y))); // armazena os vertices com seu ID e suas coordenadas x e y
-            }
-        }
-
-        vv lista_de_adjacencia(tamanho); // vetor para armazenamento das arestas dos vertices "i" e "j" e seu respectivo peso
-        for (int i = 0; i < tamanho; i++)
-        {
-            double valor1X = lista_de_vertices[i].second.first;
-            double valor1Y = lista_de_vertices[i].second.second;
-            double valor2X, valor2Y, peso;
-            for (int j = 0; j < tamanho; j++)
-            {
-                valor2X = lista_de_vertices[j].second.first;
-                valor2Y = lista_de_vertices[j].second.second;
-                if (i == j)
+                if (tipoCalc == "GEO") // avalia o tipo do cálculo do peso da distância entre os vertices(arestas)
                 {
-                    peso = 0;
-                    lista_de_adjacencia[i].emplace_back(make_pair(j, make_pair(peso, false)));
+                    peso = distanciaGeografica(valor1X, valor1Y, valor2X, valor2Y);
+                    lista_de_adjacencia[i].emplace_back(make_pair(j, make_pair(peso, true)));
                 }
-                else
+                if (tipoCalc == "EUC_2D")
                 {
-                    if (tipoCalc == "GEO") // avalia o tipo do cálculo do peso da distância entre os vertices(arestas)
-                    {
-                        peso = distanciaGeografica(valor1X, valor1Y, valor2X, valor2Y);
-                        lista_de_adjacencia[i].emplace_back(make_pair(j, make_pair(peso, true)));
-                    }
-                    if (tipoCalc == "EUC_2D")
-                    {
-                        peso = calcularDistanciaEUC_2D(valor1X, valor1Y, valor2X, valor2Y);
-                        lista_de_adjacencia[i].emplace_back(make_pair(j, make_pair(peso, true)));
-                    }
+                    peso = calcularDistanciaEUC_2D(valor1X, valor1Y, valor2X, valor2Y);
+                    lista_de_adjacencia[i].emplace_back(make_pair(j, make_pair(peso, true)));
                 }
             }
         }
+    }
 
-        // INICIO DA LÓGICA DO ALGORITMO
+    // INICIO DA LÓGICA DO ALGORITMO
 
-        // Escolha do ponto inicial será estrategicamente escolhida pelo vértice que compõe as duas arestas com menores pesos do grafo
-        int inicial = 0;
+    // Escolha do ponto inicio será estrategicamente escolhida pelo vértice que compõe as duas arestas com menores pesos do grafo
+
+    double melhorMaiorDistancia = numeric_limits<double>::max();
+    vd melhor_sequencia;
+
+    for (int inicio = 0; inicio < tamanho; inicio++)
+    {
         vd sequencia_resultante;
-        sequencia_resultante.push_back(inicial);
-        lista_de_adjacencia[inicial][inicial].second.second = false;
-        lista_de_adjacencia[inicial][inicial].second.second = false;
+        sequencia_resultante.push_back(inicio);
+        lista_de_adjacencia[inicio][inicio].second.second = false;
+        lista_de_adjacencia[inicio][inicio].second.second = false;
 
         int marcador1 = -1;
         int marcador2 = -1;
 
         // descobrir dois marcadores de saída
-        Menor1Menor2(marcador1, marcador2, lista_de_adjacencia, inicial);
+        Menor1Menor2(marcador1, marcador2, lista_de_adjacencia, inicio);
 
         // pilha para caminho de marcador2
         stack<int> caminho2;
@@ -250,15 +243,15 @@ int main()
                 {
                     caminho1.push(menor1Marc1);
                 }
-                if (menor2Marc1 > -1)
+                else if (menor2Marc1 > -1)
                 {
                     caminho1.push(menor2Marc1);
                 }
-                if (menor1Marc2 > -1)
+                else if (menor1Marc2 > -1)
                 {
                     caminho2.push(menor1Marc2);
                 }
-                if (menor2Marc2 > -1)
+                else if (menor2Marc2 > -1)
                 {
                     caminho2.push(menor2Marc2);
                 }
@@ -311,8 +304,6 @@ int main()
             }
         }
 
-        cout << "DEU CERTO" << endl;
-
         // construir sequencia baseado nos caminhos de marcador1 e marcador2
         while (!caminho1.empty())
         {
@@ -332,41 +323,56 @@ int main()
             sequencia_resultante.push_back(vertice);
             caminho2.pop();
         }
-        // para fechar o ciclo do caminho basta colocar a origem como fechamento do percurso
-        sequencia_resultante.push_back(inicial);
 
-        int maior_peso = 0;
+        double maiorDistanciaAtual = 0;
         int vertice1, vertice2;
+        int tamSequencia = (int)sequencia_resultante.size();
 
-        for (int i = 1; i < (int)sequencia_resultante.size(); i++)
+        for (int i = 1; i < tamSequencia; i++)
         {
             vertice1 = sequencia_resultante[i - 1];
             vertice2 = sequencia_resultante[i];
             double pesoAtual = lista_de_adjacencia[vertice1][vertice2].second.first;
-            if (pesoAtual > maior_peso)
+            if (pesoAtual > maiorDistanciaAtual)
             {
-                maior_peso = pesoAtual;
+                maiorDistanciaAtual = pesoAtual;
             }
         }
 
-        // criar calculo de maior peso e somatória do resultado
-
-        cout << endl;
-        cout << "Maior distancia: " << maior_peso << endl;
-        arquivo.close();
-
-        char resposta;
-        cout << "Deseja realizar outra operacao? (s / n)" << endl;
-        cin >> resposta;
-        if (resposta == 's')
+        if (maiorDistanciaAtual < melhorMaiorDistancia and tamSequencia == tamanho)
         {
-            continue;
+            melhorMaiorDistancia = maiorDistanciaAtual;
+            melhor_sequencia = sequencia_resultante;
         }
-        if (resposta == 'n')
+
+        for (int x = 0; x < tamanho; x++)
         {
-            num = 12;
+            for (auto &aresta : lista_de_adjacencia[x])
+            {
+                if (aresta.first == x)
+                {
+                    continue;
+                }
+                aresta.second.second = true;
+            }
         }
     }
+
+    auto end = high_resolution_clock::now();
+
+    auto duration = duration_cast<milliseconds>(end - start);
+
+    cout << endl << "Tempo de execucao: " << duration.count() << " ms" << endl;
+    cout << endl << "Maior distancia: " << melhorMaiorDistancia << endl;
+
+    ofstream resultado("saida.txt");
+
+    for (const auto &vertice : melhor_sequencia)
+    {
+        resultado << vertice << " ";
+    }
+
+    arquivo.close();
 
     return 0;
 }

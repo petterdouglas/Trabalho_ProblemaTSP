@@ -8,6 +8,7 @@
         "cmath": "cpp",
         "iostream": "cpp",
         "random": "cpp",
-        "limits": "cpp"
+        "limits": "cpp",
+        "algorithm": "cpp"
     }
 }
